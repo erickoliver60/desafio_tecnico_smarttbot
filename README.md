@@ -50,68 +50,89 @@ Para calcular a Média Móvel Exponecial, agora que temos um valor por dia no da
 
 Para calcular as Bandas de Bollinger, fazemos o mesmo inicialmente com o dataframe, indexamos por data, e selecionamos os dias entre a Data de início e Data de fim para ser o período. Para gerar as Bandas de Bollinger, precisamos calcular apenas o Média Móvel Simples do período e o desvio padrão dos N dias do período. A banda superior de Bollinger será dada pela soma do MMS com o dobro do Desvio padrão, a banda inferior de Bollinger será dada pela subtração do MMS pelo dobro do Desvio Padrão, e o Centro de Bollinger é dado apenas pelo MMS do período. Normalmente o período de Bollinger é dado por 20 períodos, mas neste programa tomamos o cálculo para o número de períodos que for definido pela entrada. Em casos maiores ou iguais a 50 períodos, o Desvio padrão é multiplicado por 2,1, e em casos menores ou iguais a 10 períodos, o Desvio Padrão é multiplicado por 1.9, ao invés de simplesmente usarmos o dobro do Desvio Padrão no cálculo.
 
-Com os valores calculados, as funções retornam as variáveis para o programa, que executa uma função de saída onde cria um dataframe no formato definido pelo problema (timestamp,indicador-0,indicador-1,indicador-2,...) e o escreve em um arquivo de saída .csv.
+Com os valores calculados, as funções retornam as variáveis para o programa, que executa uma função de saída onde cria um dataframe no formato definido pelo problema (timestamp,indicador-0,indicador-1,indicador-2,indicador-3) e o escreve em um arquivo de saída .csv.
 
-## 4 - Explicando as funções MME e  do programa
 
-### Função MME
+## 4 - Explicando as funções
 
-    def MME(initial_date, ending_date, new_df):	
-	  	new_df = new_df.set_index(['Date'])
-	    new_df = new_df.loc[initial_date:ending_date]
-
-	    #Preço atual
-	    actualprice = (new_df['Weighted_Price'].iloc[-1:]).values
- 
-	    #MME(anterior) = MMS
-	    previous_day = ending_date - dt.timedelta(1)
-	    new_df_MMS = new_df.loc[initial_date:previous_day]
-	    new_df_MMS = new_df_MMS['Weighted_Price']
-	    MMS = new_df_MMS.mean()
-
-	    #Multiplicador K
-	    number_days = (ending_date - initial_date).days
-	    K = 2 / (1+number_days)
-
-	    #MME = [Preço Atual + MME(anterior)]*K + MME(anterior)
-	    MME = (actualprice + MMS)*K + MMS
+### Função LastDailyPriceDF
+	def LastDailyPriceDF(initial_date, ending_date, df):	
+		aux_date = initial_date #variável auxiliar que vamos usar como contador de datas
+		new_df = pd.DataFrame(columns=['Date','Time', 'Timestamp','Weighted_Price']) #criando novo dataframe apenas com Data, Hora e Preços Ponderados
 	
-	    #print('Media Movel Exponencial = ', *MME) 
-    return MME
+		while (aux_date <= ending_date): #Laço que vai da data inicial até a final para construir o novo dataframe
+			df_date = df[df['Date'] == aux_date] #Usando o aux_date para definir o dia que está sendo construido
+			df_date_row = df_date[df_date['Time'] == df_date['Time'].max()] #Pegando o última de Hora do dia cujo Preço Ponderado é diferente de todos os NaN
+			df_date_row = df_date_row[['Date', 'Time', 'Timestamp', 'Weighted_Price']] #Escrevendo a linha do referente ao dia da Data atual, com Hora e Preço Ponderado
+			new_df = new_df.append(df_date_row, ignore_index=True) #Adicionando a linha ao novo dataframe
+			aux_date = aux_date + dt.timedelta(1) #Aumentando nosso contador de datas em 1 dia
+		
+		return new_df
+		
+### Função MME
+	def MME(initial_date, ending_date, new_df):
+		new_df = new_df.set_index(['Date'])
+		new_df = new_df.loc[initial_date:ending_date]
+		
+		#Preço atual
+		actualprice = (new_df['Weighted_Price'].iloc[-1:]).values
+		
+		#MME(anterior) = MMS
+		previous_day = ending_date - dt.timedelta(1)
+		new_df_MMS = new_df.loc[initial_date:previous_day]
+		new_df_MMS = new_df_MMS['Weighted_Price']
+		MMS = new_df_MMS.mean()
+		
+		#Multiplicador K
+		number_days = (ending_date - initial_date).days
+		K = 2 / (1+number_days)
+		
+		#MME = [Preço Atual + MME(anterior)]*K + MME(anterior)
+		MME = (actualprice + MMS)*K + MMS
+	
+		return MME
 
 ### Função Bollinger
-      def Bollinger(initial_date, ending_date, new_df):	
-	    new_df = new_df.set_index(['Date'])
-	    new_df = new_df.loc[initial_date:ending_date]
-	    new_df = new_df['Weighted_Price']
-
-	    #MMS
-	    MMS = new_df.mean()
-
-	    #Desvio Padrão
-	    number_days = (ending_date - initial_date).days
-
-	    #Curto prazo, usar 10 dias
-	    if(number_days <= 10):
-		    std_deviation = (1.9)*new_df.std()
-	    #Longo prazo, usar 50 dias
-	    elif(number_days >= 50):
-		    std_deviation = (2.1)*new_df.std()
-	    #Prazo padrão, usar 20 dias
-	    else:
-		    std_deviation = (2)*new_df.std()
-
-	    #Banda Superior = Média Móvel Simples (20 dias) + (2 x Desvio Padrão de 20 dias)
-	    Sup_Bollinger = MMS + std_deviation
+	def Bollinger(initial_date, ending_date, new_df):
+		new_df = new_df.set_index(['Date'])
+		new_df = new_df.loc[initial_date:ending_date]
+		new_df = new_df['Weighted_Price']
+		
+		#MMS
+		MMS = new_df.mean()
+		
+		#Desvio Padrão
+		number_days = (ending_date - initial_date).days
+		
+		#Curto prazo, usar 10 dias
+		if(number_days <= 10):
+			std_deviation = (1.9)*new_df.std()
+		#Longo prazo, usar 50 dias
+		elif(number_days >= 50):
+			std_deviation = (2.1)*new_df.std()
+		#Prazo padrão, usar 20 dias
+		else:
+			std_deviation = (2)*new_df.std()
+		
+		#Banda Superior = Média Móvel Simples (20 dias) + (2 x Desvio Padrão de 20 dias)
+		Sup_Bollinger = MMS + std_deviation
+		
+		#Centro de Bollinger = Média Móvel Simples (20 dias)
+		Center_Bollinger = MMS
+		
+		#Banda Inferior = Média Móvel Simples (20 dias) – (2 x Desvio Padrão de 20 dias)
+		Inf_Bollinger = MMS - std_deviation
 	
-	    #Centro de Bollinger = Média Móvel Simples (20 dias)
-	    Center_Bollinger = MMS
-	
-	    #Banda Inferior = Média Móvel Simples (20 dias) – (2 x Desvio Padrão de 20 dias)
-	    Inf_Bollinger = MMS - std_deviation
-	    return Sup_Bollinger, Center_Bollinger, Inf_Bollinger
+		return Sup_Bollinger, Center_Bollinger, Inf_Bollinger
 
     
 ## 5 - Saída
+A função OutputToCSV gera como saída do programa um arquivo .csv com o header: (timestamp, indicador-0, indicador-1, indicador-2, indicador-3). Os indicadores que aparecem na saída remetem a:
+- Timestamp: É o valor da coluna Timestamp que já é fornecido pelo dataset de entrada. O Timestamp está em formato Unix, e refere-se ao Timestamp do último dia do período.
+- indicador-0: É a Média Móvel Exponencial do período, e é um valor numérico no formato float64.
+- indicador-1: É a Banda Inferior de Bollinger do período, e é um valor numérico no formato float64.
+- indicador-2: É o Centro de Bollinger do período, e é um valor numérico no formato float64.
+- indicador-3: É a Banda Superior de Bollinger do período, e é um valor numérico no formato float64.
 
-## 6 - Testes 
+
+## 6 - Testes Automáticos
