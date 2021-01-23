@@ -54,9 +54,10 @@ def MME(initial_date, ending_date, new_df):
 
 	#MME = [Preço Atual + MME(anterior)]*K + MME(anterior)
 	MME = (actualprice + MMS)*K + MMS
-
-	print('Media Movel Exponencial = ', *MME) 
-
+	
+	#print('Media Movel Exponencial = ', *MME) 
+	return MME
+	
 #-----------------------------------------------------------------------
 #Função que encontra o Índice de Força Relativa (IFR)
 #def IFR(initial_date, ending_date, new_df):	
@@ -89,7 +90,8 @@ def Bollinger(initial_date, ending_date, new_df):
 	#Banda Superior = Média Móvel Simples (20 dias) + (2 x Desvio Padrão de 20 dias)
 	Sup_Bollinger = MMS + std_deviation
 	
-	print('Banda Superior de Bollinger = ', Sup_Bollinger)
+	#print('Banda Superior de Bollinger = ', Sup_Bollinger)
 	#Banda Inferior = Média Móvel Simples (20 dias) – (2 x Desvio Padrão de 20 dias)
 	Inf_Bollinger = MMS - std_deviation
-	print('Banda Inferior de Bollinger = ', Inf_Bollinger)
+	
+	return Sup_Bollinger,Inf_Bollinger

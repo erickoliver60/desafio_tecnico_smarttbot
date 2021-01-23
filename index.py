@@ -30,14 +30,17 @@ def main():
 		new_df = financial_lib.MeanDailyPriceDF(initial_date, ending_date, df)
 	
 	#Media movel exponencial (MME)
-	financial_lib.MME(initial_date, ending_date, new_df)
+	MME = financial_lib.MME(initial_date, ending_date, new_df)
 		
 	#Índice de Força Relativa (IFR)
-	#financial_lib.IFR(initial_date, ending_date, new_df)
+	#IFR = financial_lib.IFR(initial_date, ending_date, new_df)
 			
 	#Bandas de Bollinger
-	financial_lib.Bollinger(initial_date, ending_date, new_df)
-		
-
+	Sup_Bollinger, Inf_Bollinger = financial_lib.Bollinger(initial_date, ending_date, new_df)
+	
+	print("Media Movel Exponencial = ", *MME)
+	print("Banda Inferior de Bollinger = ", Inf_Bollinger)
+	print("Banda Superior de Bollinger = ", Sup_Bollinger)
+	
 if __name__ == "__main__":
 	main()
