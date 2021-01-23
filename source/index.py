@@ -19,28 +19,28 @@ def main():
 	initial_date, ending_date = io_lib.InputDate()	
 	
 	#Escolher o valor da condição entre preço médio do dia e último preço do dia
-	#condition = 'meanprice'
-	conditionvalue = 'lastprice'
-	if (conditionvalue == 'lastprice'):
-		#Criando um dataframe com as informações de Data, Hora e Preços Ponderados, onde mostra a Hora e o Valor do ÚLTIMO Preço Ponderado de cada dia	
-		new_df = financial_lib.LastDailyPriceDF(initial_date, ending_date, df)
-	
-	elif(condition == 'meanprice'):
-		#Criando um dataframe apenas com as informações de Data, Hora e Preços Ponderados, onde mostra a Hora e o Valor do Preço Ponderado MÉDIO de cada dia
-		new_df = financial_lib.MeanDailyPriceDF(initial_date, ending_date, df)
-	
+
+	#Criando um dataframe com as informações de Data, Hora e Preços Ponderados, onde mostra a Hora e o Valor do ÚLTIMO Preço Ponderado de cada dia	
+	new_df = financial_lib.LastDailyPriceDF(initial_date, ending_date, df)
+		
 	#Media movel exponencial (MME)
 	MME = financial_lib.MME(initial_date, ending_date, new_df)
-		
-	#Índice de Força Relativa (IFR)
-	#IFR = financial_lib.IFR(initial_date, ending_date, new_df)
-			
+
 	#Bandas de Bollinger
-	Sup_Bollinger, Inf_Bollinger = financial_lib.Bollinger(initial_date, ending_date, new_df)
+	Sup_Bollinger, Center_Bollinger, Inf_Bollinger = financial_lib.Bollinger(initial_date, ending_date, new_df)
 	
-	print("Media Movel Exponencial = ", *MME)
-	print("Banda Inferior de Bollinger = ", Inf_Bollinger)
-	print("Banda Superior de Bollinger = ", Sup_Bollinger)
+	#Salvando o timestamp do último período
+	Timestamp = new_df['Timestamp'].iloc[-1]
+		
+	#Escrevendo saída encontrada no arquivo .csv
+	io_lib.OutputToCSV(Timestamp, MME, Inf_Bollinger, Center_Bollinger, Sup_Bollinger)
+	
+	print('Timestamp de Bollinger = ', Timestamp)
+	print('MME de Bollinger = ', *MME)
+	print('Banda Inferior de Bollinger = ', Inf_Bollinger)
+	print('Centro de Bollinger = ', Center_Bollinger)
+	print('Banda Superior de Bollinger = ', Sup_Bollinger)
+	
 	
 if __name__ == "__main__":
 	main()
