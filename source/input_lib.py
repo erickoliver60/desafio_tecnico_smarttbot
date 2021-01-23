@@ -16,5 +16,3 @@ def InputDate(date_entry1="", date_entry2=""):
 	
 	return initial_date,ending_date
 	
-
-

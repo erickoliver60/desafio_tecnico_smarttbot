@@ -1,8 +1,11 @@
 import pandas as pd
 import datetime as dt
 
-import io_lib
-import financial_lib
+from pathlib import Path
+path = Path()
+
+import path.parent/io_lib
+import path.parent/financial_lib
 
 #----------------------------------------------------------------------------
 #Teste Desafio Smarttbot
@@ -37,10 +40,6 @@ def main(date_entry1,date_entry2):
 			
 	#Bandas de Bollinger
 	Sup_Bollinger, Inf_Bollinger = financial_lib.Bollinger(initial_date, ending_date, new_df)	
-
-	print("Media Movel Exponencial = ", *MME)
-	print("Banda Inferior de Bollinger = ", Inf_Bollinger)
-	print("Banda Superior de Bollinger = ", Sup_Bollinger)	
 	
 	return MME, Inf_Bollinger, Sup_Bollinger
 
