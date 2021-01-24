@@ -98,17 +98,19 @@ Fazemos um laço que vai da Data de início até a Data de fim. Linha por linha,
 	
 		return MME
 
-A função <b>MME</b>
+A função <b>MME</b> recebe a Data de início e a Data de fim dada pelo usuário, e o novo dataframe criado pela função GetClosingPricePerDay. Logo de inicio, já indexamos a coluna 'Date', e restringimos o dataframe no período entre as Datas de início e fim. Após isso, determinamos o valor das váriáveis que usaremos na fórmula do MME. Primeiro, a variavel do Preço Atual, depois calculamos o MMS da Data de início até o dia anterior da Data de fim, usando o valor dos Preços Ponderados deste período e tirando a média entre eles, e por último calculamos o multiplicador K, determinado por <i>2/(1 + número de períodos)</i>, e como nossos períodos são dias, logo fica <i>K = 2/(1 + número de dias)</i>.
+
+Com os valores calculados, é efetuado o cálculo da fórmula do MME, e então a função retorna o valor da Média Móvel Exponencial.
  
  
 ### Função Bollinger
 	def GetBollinger(initial_date, ending_date, new_df):	
 	
 		new_df = new_df.set_index(['Date'])
-		new_df = new_df.loc[initial_date:ending_date]
-		new_df = new_df['Weighted_Price']
+		new_df = new_df.loc[initial_date:ending_date]		
 
 		#MMS
+		new_df = new_df['Weighted_Price']
 		MMS = new_df.mean()
 
 		#Desvio Padrão
@@ -135,7 +137,9 @@ A função <b>MME</b>
 	
 		return Sup_Bollinger, Center_Bollinger, Inf_Bollinger
 
-A função <b>Bollinger</b>
+A função <b>Bollinger</b> também recebe a Data de início e a Data de fim dada pelo usuário, e o novo dataframe criado pela função GetClosingPricePerDay. Como na função MME, indexamos a coluna 'Date' e determinamos que o dataframe será apenas o período entre a Data de início e a Data de fim. Para calcular as bandas de Bollinger, a primeira coisa que fazemos é tirar a média dos Preços Ponderados de todos os dias do período, achando assim o MMS do período. Depois calculamos o desvio padrão deste mesmo período. Com o MMS e o desvio padrão, podemos agora calcular Bollinger, porém antes vamos analisar os casos em que o período é menor que 10 dias e maior que 50 dias. Neste caso, a fórmula que tem mudança no multiplicador do desvio padrão. Caso o período seja maior que 50 dias, então o multiplicador 2 se torna 2.1, e caso seja menor que 10 dias, o multiplicador se torna 1.9. Após analisar as condições, nós efetuamos a fórmula para a Banda Superior, <i>Banda Superior = MMS + (Multplicador x Desvio Padrão)</i>, para o Centro de Bollinger, <i>Centro = MMS</i>, e para Banda Inferior de Bollinger, <i>Banda Inferior = MMS - (Multplicador x Desvio Padrão)</i>.
+
+Com os cálculos executados, a função retorna os três valores, Banda Superior de Bollinger, Centro de Bollinger e Banda Inferior de Bollinger.
 
     
 ## 5 - Saída
