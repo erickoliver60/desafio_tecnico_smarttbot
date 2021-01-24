@@ -32,9 +32,7 @@ O arquivo de saída será um arquivo CSV com o seguinte formato:
 -timestamp,indicador-0,indicador-1,indicador-2,...
 
 ## 3 - Tomadas de decisão de implementação
-O programa começa lendo o arquivo .csv e guardando as informações do arquivo em um dataframe usando funções da biblioteca pandas. Após isso, escolhemos fazer um tratamento dos dados, criamos duas novas colunas Date e Time, para guardar informações dos Timestamps convertidos, e também retiramos todos os valores NaN da coluna do Preço Ponderado, já que não poderíamos trabalhar com eles. 
-
-Com o dataframe criado, é hora de receber a entrada do usuário que determinará o período que iremos trabalhar no programa, o programa então lê via linha de comandos as variáveis referentes a Data de início e Data de fim do período, ambas no formato "YYYY-MM-DD".
+O programa começa lendo via linha de comandos as variáveis referentes a Data de início e Data de fim do período, ambas no formato "YYYY-MM-DD", e logo em seguida já faz uma autenticação para entrada válida. Feito isto, o programa então lê o dataset do arquivo .csv, guardando as informações do arquivo em um dataframe usando funções da biblioteca pandas. Com todas as entradas lidas, fazemos um tratamento dos dados do dataframe, criamos duas novas colunas Date e Time, para guardar informações dos Timestamps convertidos, e também retiramos todos os valores NaN da coluna do Preço Ponderado, já que não poderíamos trabalhar com eles. Com o dataframe criado, usamos a entrada das datas de início e fim do usuário para determinar o período que iremos trabalhar no programa. 
 
 Agora que o programa já tem todas suas entradas definidas, chegou a hora de trabalhar com os dois indicadores técnicos que iremos representar no programa. A definição de ambos indicadores pode ser encontrada nos links abaixo:
 
@@ -140,3 +138,16 @@ A função OutputToCSV gera como saída do programa um arquivo .csv com o header
 
 
 ## 6 - Testes Automáticos
+
+Foram feitos um total de 4 testes para verificar se o programa trata os possíveis erros que possam ocorrer. O arquivo de testes index_test.py foi feito usando o framework de testes pytest e todos os testes passaram, segue abaixo uma explicação sobre cada um deles.
+
+No primeiro teste, fazemos um teste básico para verificarmos se o programa, com uma entrada válida de período pequeno, gera uma saída a esperada. No segundo teste, verificamos se o programa trata o caso onde a entrada é vazia ou se a entrada passa um valor de tipo de variável diferente do esperado. No terceiro teste, verificamos se o programa trata o erro do caso em que a Data de início é maior que a Data de fim. E por fim no quarto teste, temos novamente outro teste para verificarmos se o programa gera saída esperada com entrada vália, porém desta vez com um período maior. 
+
+
+
+
+
+
+
+###### - Contato
+Para quaisquer dúvidas e/ou erros presentes sobre o código, entre em contato comigo pelo e-mail: <b>erick.oliver60@gmail.com</b>
