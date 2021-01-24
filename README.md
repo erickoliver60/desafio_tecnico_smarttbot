@@ -44,7 +44,7 @@ Agora que o programa já tem todas suas entradas definidas, chegou a hora de tra
 
 Com o período definido por datas, resolvemos considerar nosso período em dias, e para isso tomamos um valor de Preço Ponderado para representar cada dia do período dado. Para definir qual seria esse valor do Preço Ponderado, primeiramente pensamos em tirar a média dos Preços Ponderados de cada dia, porém devido a valores NaN, e o fato de precisarmos do Timestamp referente ao valor, teríamos problemas. Pensamos também na possibilidade de pegar o valor da mediana dos Preços Ponderados, pois assim teríamos o Timestamp relacionado, mas lendo sobre os dois indicadores, achamos melhor escolher o último valor de Preço Ponderado de cada dia que fosse diferente de NaN, pois este seria o Preço Ponderado que a bitcoin teoricamente fechou o dia, e assim poderíamos ter as Timestamps de cada Preço da mesma forma.
 
-Criamos então uma função LastDailyPriceDF que nos entrega um novo dataframe apenas com os valores que iremos usar para ambos indicadores: Date, Time, Timestamp, e Weighted_Price. Agora temos um novo dataframe, mais enxuto apenas com as informações que escolhemos usar para nossos dois indicadores, que serão calculados em sequência.
+Criamos então uma função GetClosingPricePerDay que nos entrega um novo dataframe apenas com os valores que iremos usar para ambos indicadores: Date, Time, Timestamp, e Weighted_Price. Agora temos um novo dataframe, mais enxuto apenas com as informações que escolhemos usar para nossos dois indicadores, que serão calculados em sequência.
 
 Para calcular a Média Móvel Exponecial, agora que temos um valor por dia no dataframe, indexamos o dataframe por data, e selecionamos apenas os dias entre a Data de início e a Data de fim. Calculamos as três variáveis da fórmula do MME: Actual Price, MME Anterior(Média Móvel Simples até o dia anterior), e o multiplicador usando o número de dias do período. Com as varíaveis calculadas, apenas executamos a fórmula e retornamos o valor do MME para o período dado.
 
@@ -53,57 +53,61 @@ Para calcular as Bandas de Bollinger, fazemos o mesmo inicialmente com o datafra
 Com os valores calculados, as funções retornam as variáveis para o programa, que executa uma função de saída onde cria um dataframe no formato definido pelo problema (timestamp,indicador-0,indicador-1,indicador-2,indicador-3) e o escreve em um arquivo de saída .csv.
 
 
-## 4 - Explicando as funções
+## 4 - Explicando as funções do arquivo financial_lib.py
 
-### Função LastDailyPriceDF
-	def LastDailyPriceDF(initial_date, ending_date, df):	
-		aux_date = initial_date #variável auxiliar que vamos usar como contador de datas
-		new_df = pd.DataFrame(columns=['Date','Time', 'Timestamp','Weighted_Price']) #criando novo dataframe apenas com Data, Hora e Preços Ponderados
+### Função GetClosingPricePerDay
+	def GetClosingPricePerDay(initial_date, ending_date, df):	
 	
-		while (aux_date <= ending_date): #Laço que vai da data inicial até a final para construir o novo dataframe
-			df_date = df[df['Date'] == aux_date] #Usando o aux_date para definir o dia que está sendo construido
+		aux_date = initial_date 
+		new_df = pd.DataFrame(columns=['Date','Time', 'Timestamp','Weighted_Price'])
+		
+		while (aux_date <= ending_date): 
+			df_date = df[df['Date'] == aux_date] #Usando o aux_date para definir o dia de interesse da linha
 			df_date_row = df_date[df_date['Time'] == df_date['Time'].max()] #Pegando o última de Hora do dia cujo Preço Ponderado é diferente de todos os NaN
-			df_date_row = df_date_row[['Date', 'Time', 'Timestamp', 'Weighted_Price']] #Escrevendo a linha do referente ao dia da Data atual, com Hora e Preço Ponderado
-			new_df = new_df.append(df_date_row, ignore_index=True) #Adicionando a linha ao novo dataframe
-			aux_date = aux_date + dt.timedelta(1) #Aumentando nosso contador de datas em 1 dia
+			df_date_row = df_date_row[['Date', 'Time', 'Timestamp', 'Weighted_Price']] 
+			new_df = new_df.append(df_date_row, ignore_index=True)
+		
+			aux_date = aux_date + dt.timedelta(1) 
 		
 		return new_df
 		
 ### Função MME
-	def MME(initial_date, ending_date, new_df):
+	def GetMME(initial_date, ending_date, new_df):
+	
 		new_df = new_df.set_index(['Date'])
 		new_df = new_df.loc[initial_date:ending_date]
-		
+
 		#Preço atual
 		actualprice = (new_df['Weighted_Price'].iloc[-1:]).values
-		
+ 
 		#MME(anterior) = MMS
 		previous_day = ending_date - dt.timedelta(1)
 		new_df_MMS = new_df.loc[initial_date:previous_day]
 		new_df_MMS = new_df_MMS['Weighted_Price']
 		MMS = new_df_MMS.mean()
-		
+
 		#Multiplicador K
 		number_days = (ending_date - initial_date).days
 		K = 2 / (1+number_days)
-		
+
 		#MME = [Preço Atual + MME(anterior)]*K + MME(anterior)
 		MME = (actualprice + MMS)*K + MMS
 	
 		return MME
 
 ### Função Bollinger
-	def Bollinger(initial_date, ending_date, new_df):
+	def GetBollinger(initial_date, ending_date, new_df):	
+	
 		new_df = new_df.set_index(['Date'])
 		new_df = new_df.loc[initial_date:ending_date]
 		new_df = new_df['Weighted_Price']
-		
+
 		#MMS
 		MMS = new_df.mean()
-		
+
 		#Desvio Padrão
 		number_days = (ending_date - initial_date).days
-		
+
 		#Curto prazo, usar 10 dias
 		if(number_days <= 10):
 			std_deviation = (1.9)*new_df.std()
@@ -113,13 +117,13 @@ Com os valores calculados, as funções retornam as variáveis para o programa, 
 		#Prazo padrão, usar 20 dias
 		else:
 			std_deviation = (2)*new_df.std()
-		
+
 		#Banda Superior = Média Móvel Simples (20 dias) + (2 x Desvio Padrão de 20 dias)
 		Sup_Bollinger = MMS + std_deviation
-		
+	
 		#Centro de Bollinger = Média Móvel Simples (20 dias)
 		Center_Bollinger = MMS
-		
+	
 		#Banda Inferior = Média Móvel Simples (20 dias) – (2 x Desvio Padrão de 20 dias)
 		Inf_Bollinger = MMS - std_deviation
 	
