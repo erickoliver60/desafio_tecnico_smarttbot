@@ -2,25 +2,27 @@ import pandas as pd
 import math
 import datetime as dt
 
-#-----------------------------------------------------------------------
-#Funções que geram dataframes novos de acordo com a condição do valor do dia escolhido
-def LastDailyPriceDF(initial_date, ending_date, df):	
-	aux_date = initial_date #variável auxiliar que vamos usar como contador de datas
-	new_df = pd.DataFrame(columns=['Date','Time', 'Timestamp','Weighted_Price']) #criando novo dataframe apenas com Data, Hora e Preços Ponderados
+
+#Função que retorna um novo dataframe com o último Preço Ponderado de cada dia
+def GetClosingPricePerDay(initial_date, ending_date, df):	
+
+	aux_date = initial_date 
+	new_df = pd.DataFrame(columns=['Date','Time', 'Timestamp','Weighted_Price'])
 	
-	while (aux_date <= ending_date): #Laço que vai da data inicial até a final para construir o novo dataframe
-		df_date = df[df['Date'] == aux_date] #Usando o aux_date para definir o dia que está sendo construido
+	while (aux_date <= ending_date): 
+		df_date = df[df['Date'] == aux_date] #Usando o aux_date para definir o dia de interesse da linha
 		df_date_row = df_date[df_date['Time'] == df_date['Time'].max()] #Pegando o última de Hora do dia cujo Preço Ponderado é diferente de todos os NaN
-		df_date_row = df_date_row[['Date', 'Time', 'Timestamp', 'Weighted_Price']] #Escrevendo a linha do referente ao dia da Data atual, com Hora e Preço Ponderado
-		new_df = new_df.append(df_date_row, ignore_index=True) #Adicionando a linha ao novo dataframe
-		aux_date = aux_date + dt.timedelta(1) #Aumentando nosso contador de datas em 1 dia
+		df_date_row = df_date_row[['Date', 'Time', 'Timestamp', 'Weighted_Price']] 
+		new_df = new_df.append(df_date_row, ignore_index=True)
+		
+		aux_date = aux_date + dt.timedelta(1) 
 		
 	return new_df
 		
-#-----------------------------------------------------------------------
+		
 #Função que encontra a Média Móvel Exponencial
-def MME(initial_date, ending_date, new_df):	
-	#MME = [Preço Atual + MME(anterior)]*K + MME(anterior)
+def GetMME(initial_date, ending_date, new_df):
+	
 	new_df = new_df.set_index(['Date'])
 	new_df = new_df.loc[initial_date:ending_date]
 
@@ -40,12 +42,12 @@ def MME(initial_date, ending_date, new_df):
 	#MME = [Preço Atual + MME(anterior)]*K + MME(anterior)
 	MME = (actualprice + MMS)*K + MMS
 	
-	#print('Media Movel Exponencial = ', *MME) 
 	return MME
 	
-#----------------------------------------------------------------------------
+	
 #Função que encontra as Bandas de Bollinger
-def Bollinger(initial_date, ending_date, new_df):	
+def GetBollinger(initial_date, ending_date, new_df):	
+	
 	new_df = new_df.set_index(['Date'])
 	new_df = new_df.loc[initial_date:ending_date]
 	new_df = new_df['Weighted_Price']
