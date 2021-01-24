@@ -49,10 +49,10 @@ def GetMME(initial_date, ending_date, new_df):
 def GetBollinger(initial_date, ending_date, new_df):	
 	
 	new_df = new_df.set_index(['Date'])
-	new_df = new_df.loc[initial_date:ending_date]
-	new_df = new_df['Weighted_Price']
+	new_df = new_df.loc[initial_date:ending_date]	
 
 	#MMS
+	new_df = new_df['Weighted_Price']
 	MMS = new_df.mean()
 
 	#Desvio Padrão

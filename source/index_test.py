@@ -3,7 +3,7 @@ import datetime as dt
 import io_lib
 import financial_lib
 from index import control 
-from error_lib import InputTypeError, InvalidInputError
+from error_lib import InputTypeAndEmptyInputError, InvalidInputError
 
 def test_Valid_SmallInput():
 
@@ -26,12 +26,13 @@ def test_Valid_SmallInput():
 		
 	assert not errors, "Erros encontrados: \n{}".format("\n".join(errors))
 	
-def test_Invalid_EmptyInput():
+def test_Invalid_InputTypeAndEmptyInputError():
 		
 	try:
 		control('','')		
 		assert False
-	except InputTypeError:
+	except InputTypeAndEmptyInputError:
+		print("Entrada vazia ou tipo de entrada diferente de datetime")
 		assert True
 		
 	
@@ -43,6 +44,7 @@ def test_Invalid_InvalidInput():
 		control(initial_date,end_date)
 		assert False
 	except InvalidInputError:
+		print("Data de início maior que a Data de fim")
 		assert True
 
 		

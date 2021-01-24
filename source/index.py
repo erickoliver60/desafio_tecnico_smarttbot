@@ -2,12 +2,12 @@ import pandas as pd
 import datetime as dt
 import io_lib
 import financial_lib
-from error_lib import InputTypeError, InvalidInputError
+from error_lib import InputTypeAndEmptyInputError, InvalidInputError
 	
 def control(initial_date, ending_date):
 	
 	if (not isinstance(initial_date, dt.date) or not isinstance(ending_date, dt.date)):
-		raise InputTypeError()
+		raise InputTypeAndEmptyInputError()
 	elif (initial_date > ending_date):
 		raise InvalidInputError()
 		

@@ -1,4 +1,4 @@
-class InputTypeError(Exception):
+class InputTypeAndEmptyInputError(Exception):
 	pass
 	
 class InvalidInputError(Exception):
